@@ -1,4 +1,4 @@
-FROM ubuntu:15.10
+FROM ubuntu:18.04
 
 MAINTAINER Yannick Pereira-Reis <yannick.pereira.reis@gmail.com>
 
@@ -12,25 +12,30 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
 	git \
 	curl \
 	supervisor \
-	php5 \
-	php5-mcrypt \
-	php5-tidy \
-	php5-cli \
-	php5-common \
-	php5-curl \
-	php5-intl \
-	php5-fpm \
-	php-apc \
+	unzip \
+	php \
+	# php-mcrypt \
+	php-tidy \
+	php-cli \
+	php-common \
+	php-curl \
+	php-intl \
+	php-fpm \
+	php-xml \
+	php-zip \
+	# php-apc \
 	nginx \
 	ssh \
 	npm \
 	&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN sed -i "s/;date.timezone =.*/date.timezone = UTC/" /etc/php5/fpm/php.ini \
-	&& sed -i "s/;date.timezone =.*/date.timezone = UTC/" /etc/php5/cli/php.ini \
+RUN sed -i "s/;date.timezone =.*/date.timezone = UTC/" /etc/php/7.2/fpm/php.ini \
+	&& sed -i "s/;date.timezone =.*/date.timezone = UTC/" /etc/php/7.2/cli/php.ini \
 	&& echo "daemon off;" >> /etc/nginx/nginx.conf \
-	&& sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf \
-	&& sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php5/fpm/php.ini
+	&& sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php/7.2/fpm/php-fpm.conf \
+	&& sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php/7.2/fpm/php.ini
+
+RUN mkdir -p /run/php/
 
 ADD nginx/default   /etc/nginx/sites-available/default
 
@@ -45,7 +50,7 @@ RUN mkdir -p /root/.ssh/ && touch /root/.ssh/known_hosts
 # Install Satis and Satisfy
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
 	&& /usr/local/bin/composer global require hirak/prestissimo \
-	&& /usr/local/bin/composer create-project playbloom/satisfy:dev-master --stability=dev \
+	&& /usr/local/bin/composer create-project playbloom/satisfy:dev-master --stability=dev --ignore-platform-reqs \
 	&& chmod -R 777 /satisfy \
 	&& rm -rf /root/.composer/cache/*
 
